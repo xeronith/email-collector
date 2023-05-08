@@ -7,6 +7,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
 )
 
@@ -36,6 +37,9 @@ func main() {
 
 	// Create a new Fiber app
 	app := fiber.New()
+
+	// Allow all origins
+	app.Use(cors.New())
 
 	// Define a rate limiter middleware to limit requests to 10 requests per minute per IP address
 	limiter := limiter.New(limiter.Config{
