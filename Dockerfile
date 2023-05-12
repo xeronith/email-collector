@@ -13,6 +13,9 @@ RUN go build -o ./email-collector
 # Use a minimal base image for the app container
 FROM ubuntu:latest
 
+# Install ca-certificates package
+RUN apt-get update && apt-get install -y ca-certificates
+
 # Set the working directory
 WORKDIR /app
 
@@ -21,6 +24,11 @@ COPY --from=builder /src/email-collector ./
 
 # Create a directory for the database and set permissions
 RUN mkdir ./db && chmod 777 ./db
+
+# Postmark environment variables to send emails
+ENV POSTMARK_TOKEN "your-token"
+ENV POSTMARK_FROM "from@yourdomain.com"
+ENV POSTMARK_TEMPLATE_ALIAS "template-alias"
 
 # Mount a volume for the database
 VOLUME ./db

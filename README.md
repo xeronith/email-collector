@@ -21,7 +21,13 @@ This is a simple web app built with the [Fiber](https://github.com/gofiber/fiber
 
 4. Run the Docker container and mount a volume for the database:
    ```
-   docker run -p 8080:8080 -v /path/to/local/db:/app/db email-collector
+   docker run \
+      -p 8080:8080 \
+      -e POSTMARK_TOKEN="your-token" \
+      -e POSTMARK_FROM="from@yourdomain.com" \
+      -e POSTMARK_TEMPLATE_ALIAS="template-alias" \
+      -v /path/to/local/db:/app/db \
+      email-collector
    ```
 
 5. Visit `http://localhost:8080` in your web browser to see the app in action.
@@ -56,6 +62,7 @@ The app uses the following third-party dependencies:
 - [Fiber](https://github.com/gofiber/fiber) - Web framework for Go.
 - [GORM](https://gorm.io) - ORM library for Go.
 - [SQLite3](https://github.com/mattn/go-sqlite3) - SQLite3 driver for Go.
+- [Postmark](https://postmarkapp.com) - Email Delivery Service
 
 ## 📝 License
 

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"time"
 
 	"gorm.io/driver/sqlite"
@@ -9,6 +10,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
+	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/jinzhu/configor"
 )
 
 // Define a struct for the user model
@@ -22,7 +25,19 @@ type User struct {
 	Data       string
 }
 
+// Define a struct for the configuration
+var Config = struct {
+	PostmarkToken         string `env:"POSTMARK_TOKEN"`
+	PostmarkFrom          string `env:"POSTMARK_FROM"`
+	PostmarkTemplateAlias string `env:"POSTMARK_TEMPLATE_ALIAS"`
+}{}
+
 func main() {
+	// Load the configuration
+	if err := configor.Load(&Config); err != nil {
+		panic(err)
+	}
+
 	// Connect to the SQLite database
 	db, err := gorm.Open(sqlite.Open("./db/users.db"), &gorm.Config{})
 	if err != nil {
@@ -49,6 +64,9 @@ func main() {
 
 	// Apply the rate limiter middleware to the entire app
 	app.Use(limiter)
+
+	// Apply the logger middleware to the entire app
+	app.Use(logger.New())
 
 	// Define a route for handling POST requests to /subscribe
 	app.Post("/subscribe", func(c *fiber.Ctx) error {
@@ -83,6 +101,16 @@ func main() {
 				})
 			}
 			return err
+		}
+
+		// Send confirmation email
+		if err := SendEmail(
+			Config.PostmarkToken,
+			Config.PostmarkFrom,
+			body.Email,
+			Config.PostmarkTemplateAlias,
+		); err != nil {
+			log.Println(err)
 		}
 
 		// Return a success response
